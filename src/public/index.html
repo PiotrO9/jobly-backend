@@ -1,0 +1,162 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Jobly - Job Search API</title>
+  <style>
+    body {
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      line-height: 1.6;
+      max-width: 800px;
+      margin: 0 auto;
+      padding: 20px;
+      color: #333;
+    }
+    h1 {
+      color: #2c3e50;
+      border-bottom: 2px solid #3498db;
+      padding-bottom: 10px;
+    }
+    h2 {
+      color: #2980b9;
+    }
+    .endpoint {
+      background-color: #f8f9fa;
+      padding: 15px;
+      border-radius: 5px;
+      margin-bottom: 20px;
+      border-left: 4px solid #3498db;
+    }
+    .method {
+      font-weight: bold;
+      color: #e74c3c;
+    }
+    pre {
+      background-color: #f1f1f1;
+      padding: 10px;
+      border-radius: 5px;
+      overflow-x: auto;
+    }
+    button {
+      background-color: #3498db;
+      color: white;
+      border: none;
+      padding: 10px 15px;
+      border-radius: 5px;
+      cursor: pointer;
+      margin: 5px 0;
+    }
+    button:hover {
+      background-color: #2980b9;
+    }
+    #results {
+      margin-top: 20px;
+      background-color: #f8f9fa;
+      padding: 15px;
+      border-radius: 5px;
+      white-space: pre-wrap;
+    }
+  </style>
+</head>
+<body>
+  <h1>Jobly API Tester</h1>
+  
+  <div class="endpoint">
+    <h2>Test API Endpoints</h2>
+    <p><button onclick="getAllJobs()">GET All Jobs</button> <span class="method">GET</span> /api/jobs</p>
+    <p><button onclick="getJobById()">GET Job by ID</button> <span class="method">GET</span> /api/jobs/:id</p>
+    <p><button onclick="createJob()">Create Job</button> <span class="method">POST</span> /api/jobs</p>
+    <p><button onclick="updateJob()">Update Job</button> <span class="method">PUT</span> /api/jobs/:id</p>
+    <p><button onclick="deleteJob()">Delete Job</button> <span class="method">DELETE</span> /api/jobs/:id</p>
+  </div>
+
+  <h2>Results:</h2>
+  <div id="results">Results will appear here...</div>
+
+  <script>
+    const resultsDiv = document.getElementById('results');
+
+    function displayResults(data) {
+      resultsDiv.textContent = typeof data === 'object' 
+        ? JSON.stringify(data, null, 2) 
+        : data;
+    }
+
+    async function fetchAPI(url, options = {}) {
+      try {
+        const response = await fetch(url, options);
+        const data = await response.json();
+        displayResults(data);
+        return data;
+      } catch (error) {
+        displayResults(`Error: ${error.message}`);
+      }
+    }
+
+    function getAllJobs() {
+      fetchAPI('/api/jobs');
+    }
+
+    function getJobById() {
+      const id = prompt('Enter job ID:', '1');
+      if (id) {
+        fetchAPI(`/api/jobs/${id}`);
+      }
+    }
+
+    function createJob() {
+      const jobData = {
+        title: prompt('Enter job title:', 'Software Developer'),
+        company: prompt('Enter company name:', 'Tech Company'),
+        location: prompt('Enter location:', 'Warsaw'),
+        salary: prompt('Enter salary range:', '10000-15000 PLN'),
+        description: prompt('Enter description:', 'Exciting opportunity for a skilled developer')
+      };
+
+      fetchAPI('/api/jobs', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify(jobData)
+      });
+    }
+
+    function updateJob() {
+      const id = prompt('Enter job ID to update:', '1');
+      if (!id) return;
+
+      const jobData = {
+        title: prompt('Enter new job title (leave empty to keep current):'),
+        company: prompt('Enter new company name (leave empty to keep current):'),
+        location: prompt('Enter new location (leave empty to keep current):'),
+        salary: prompt('Enter new salary range (leave empty to keep current):'),
+        description: prompt('Enter new description (leave empty to keep current):')
+      };
+
+      // Filter out empty values
+      Object.keys(jobData).forEach(key => {
+        if (!jobData[key]) delete jobData[key];
+      });
+
+      fetchAPI(`/api/jobs/${id}`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify(jobData)
+      });
+    }
+
+    function deleteJob() {
+      const id = prompt('Enter job ID to delete:', '1');
+      if (id) {
+        fetchAPI(`/api/jobs/${id}`, {
+          method: 'DELETE'
+        });
+      }
+    }
+  </script>
+</body>
+</html> 
